@@ -21,40 +21,25 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>org.apache.aries.jpa.javax.persistence</groupId>
+    <artifactId>org.apache.aries.jpa.javax.persistence.parent</artifactId>
+    <name>Apache Aries JPA Specification API</name>
+    <packaging>pom</packaging>
+	
     <parent>
-        <groupId>org.apache.aries.jpa</groupId>
+        <groupId>org.apache.aries.jpa</groupId>	
         <artifactId>org.apache.aries.jpa.parent</artifactId>
         <version>2.7.0-SNAPSHOT</version>
-        <relativePath>jpa-parent</relativePath>
+        <relativePath>../jpa-parent</relativePath>
     </parent>
-
-    <artifactId>org.apache.aries.jpa.main</artifactId>
-    <name>Apache Aries JPA parent</name>
-    <packaging>pom</packaging>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
     
-    <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/aries/trunk/jpa</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/aries/trunk/jpa</developerConnection>
-        <url>http://svn.apache.org/viewvc/aries/trunk/jpa</url>
-    </scm>
+     <properties>
+        <baseline.skip>true</baseline.skip>
+    </properties>
 
     <modules>
-        <module>jpa-parent</module>
-        <module>javax-persistence</module>
-        <module>jpa-api</module>
-        <module>jpa-container</module>
-        <module>jpa-support</module>
-        <module>jpa-blueprint</module>
-<!--        <module>jpa-cdi</module>-->
-        <module>jpa-container-eclipselink-adapter</module>
-        <module>jpa-repository</module>
-        <module>examples</module>
-        <module>jpa-features</module>
-        <module>itests</module>
+        <module>2_0</module>
+        <module>2_1</module>
     </modules>
 
 </project>

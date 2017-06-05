@@ -33,6 +33,19 @@
     <name>Apache Aries JPA iTests</name>
 
     <dependencies>
+        <!-- JPA API dependencies -->
+        <dependency>
+            <groupId>org.apache.aries.jpa.javax.persistence</groupId>
+            <artifactId>javax.persistence_2.0</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.aries.jpa.javax.persistence</groupId>
+            <artifactId>javax.persistence_2.1</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    
+        <!-- Core runtime -->
         <dependency>
             <groupId>org.apache.aries.jpa</groupId>
             <artifactId>jpa-repository</artifactId>
@@ -135,11 +148,6 @@
         </dependency>
 
         <!-- eclipselink -->
-        <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.antlr</artifactId>

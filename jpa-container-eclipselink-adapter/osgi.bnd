@@ -1,4 +1,18 @@
 Export-Package: !*
 Bundle-Activator: org.apache.aries.jpa.eclipselink.adapter.Activator
-Require-Capability: osgi.identity; effective:=active; filter:="(osgi.identity=org.eclipse.persistence.jpa)"
-Provide-Capability: osgi.service; effective:=active; objectClass=javax.persistence.spi.PersistenceProvider
+
+# This plugin can work with JPA 2.0 or 2.1, but not future versions (which
+# May change the PersistenceProvider interface), so we have a custom contract.
+Require-Capability: \
+    osgi.contract; filter:="(&(osgi.contract=JavaJPA)(|(version=2)(version=2.1))(!(version>=2.2)))",\
+    osgi.identity; effective:=active; filter:="(osgi.identity=org.eclipse.persistence.jpa)"
+Provide-Capability: \
+    osgi.service; effective:=active; objectClass=javax.persistence.spi.PersistenceProvider
+
+# To ensure the contract works properly we import without versions
+Import-Package:\
+    javax.persistence;version=0.0.0,\
+    javax.persistence.criteria;version=0.0.0,\
+    javax.persistence.metamodel;version=0.0.0,\
+    javax.persistence.spi;version=0.0.0,\
+    *

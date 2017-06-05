@@ -41,8 +41,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
+            <groupId>org.apache.aries.jpa.javax.persistence</groupId>
+            <artifactId>javax.persistence_2.0</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

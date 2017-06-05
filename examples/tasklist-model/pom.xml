@@ -22,8 +22,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
+            <groupId>org.apache.aries.jpa.javax.persistence</groupId>
+            <artifactId>javax.persistence_2.1</artifactId>
         </dependency>
     </dependencies>
 </project>

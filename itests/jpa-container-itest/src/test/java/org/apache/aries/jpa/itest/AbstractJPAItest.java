@@ -216,14 +216,14 @@ public abstract class AbstractJPAItest {
     protected Option ariesJpa20() {
         return composite(
                          ariesJpaInternal(),
-                         mavenBundle("org.apache.geronimo.specs", "geronimo-jpa_2.0_spec", "1.1")
+                         mavenBundle("org.apache.aries.jpa.javax.persistence", "javax.persistence_2.0")
             );
     }
 
     protected Option ariesJpa21() {
         return composite(
                          ariesJpaInternal(),
-                         mvnBundle("org.eclipse.persistence", "javax.persistence")
+                         mvnBundle("org.apache.aries.jpa.javax.persistence", "javax.persistence_2.1")
             );
     }
 
