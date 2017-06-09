@@ -28,6 +28,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.hooks.weaving.WeavingHook;
+import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.BundleTracker;
 
 public class Activator implements BundleActivator {
@@ -38,7 +39,7 @@ public class Activator implements BundleActivator {
     public void start(BundleContext context) throws Exception {
         registerWeavingHook(context, TransformerRegistrySingleton.get());
 
-        PersistenceBundleTracker customizer = new PersistenceBundleTracker();
+        PersistenceBundleTracker customizer = new PersistenceBundleTracker(context.getBundle().adapt(BundleWiring.class));
         persistenceBundleManager = new BundleTracker<Bundle>(context, Bundle.STARTING | Bundle.ACTIVE, customizer);
         persistenceBundleManager.open();
     }
