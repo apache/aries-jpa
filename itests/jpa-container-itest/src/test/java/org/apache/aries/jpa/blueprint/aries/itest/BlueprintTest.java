@@ -61,7 +61,7 @@ public class BlueprintTest extends AbstractCarJPAITest {
             } finally {
                 coordination.end();
             }
-            carService.deleteCar(BLUE_CAR_PLATE);
+            carService.deleteCar(BLUE_PLATE);
             Assert.assertEquals(0, carService.getCars().size());
         }
     }
@@ -132,22 +132,22 @@ public class BlueprintTest extends AbstractCarJPAITest {
     private void carLifecycle(CarService carService) {
         assertNoCoordination();
         if (carService.getCar(BLACK_CAR_PLATE) != null) {
-            carService.deleteCar(BLUE_CAR_PLATE);
+            carService.deleteCar(BLUE_PLATE);
         }
         carService.addCar(createBlueCar());
-        assertBlueCar(carService.getCar(BLUE_CAR_PLATE));
-        carService.deleteCar(BLUE_CAR_PLATE);
+        assertBlueCar(carService.getCar(BLUE_PLATE));
+        carService.deleteCar(BLUE_PLATE);
     }
     
     private void carRealTransactionalLifecycle(CarService carService) throws IllegalStateException, SystemException, NotSupportedException {
         assertNoCoordination();
         if (carService.getCar(BLACK_CAR_PLATE) != null) {
-            carService.deleteCar(BLUE_CAR_PLATE);
+            carService.deleteCar(BLUE_PLATE);
         }
         ut.begin();
         carService.addCar(createBlueCar());
         ut.rollback();
-        Assert.assertNull(carService.getCar(BLUE_CAR_PLATE));
+        Assert.assertNull(carService.getCar(BLUE_PLATE));
     }
 
     private void assertNoCoordination() {

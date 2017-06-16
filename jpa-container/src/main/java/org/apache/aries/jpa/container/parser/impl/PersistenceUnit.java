@@ -44,6 +44,7 @@ public class PersistenceUnit implements PersistenceUnitInfo {
     private Bundle bundle;
     private ClassLoader classLoader;
     private Set<String> classNames;
+    private Set<String> mappingFileNames;
     private boolean excludeUnlisted;
     private DataSource jtaDataSource;
     private String jtaDataSourceName;
@@ -65,10 +66,15 @@ public class PersistenceUnit implements PersistenceUnitInfo {
         this.props = new Properties();
         this.classLoader = bundle.adapt(BundleWiring.class).getClassLoader();
         this.classNames = new HashSet<String>();
+        this.mappingFileNames = new HashSet<String>();
     }
 
     public void addClassName(String className) {
         this.classNames.add(className);
+    }
+    
+    public void addMappingFile(String mappingFileName) {
+        this.mappingFileNames.add(mappingFileName);
     }
 
     public void addProperty(String name, String value) {
@@ -116,7 +122,7 @@ public class PersistenceUnit implements PersistenceUnitInfo {
 
     @Override
     public List<String> getMappingFileNames() {
-        return Collections.emptyList();
+    	return new ArrayList<String>(mappingFileNames);
     }
 
     public String getName() {

@@ -103,6 +103,8 @@ public class JPAHandler extends DefaultHandler {
             pu.setNonJtaDataSourceName(s);
         else if ("class".equals(elementName))
             pu.addClassName(s);
+        else if("mapping-file".equals(elementName))
+        	pu.addMappingFile(s);
         else if ("exclude-unlisted-classes".equals(elementName))
             pu.setExcludeUnlisted(Boolean.parseBoolean(s));
         else if ("shared-cache-mode".equals(elementName))

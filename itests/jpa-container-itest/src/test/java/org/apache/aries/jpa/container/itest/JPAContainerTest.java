@@ -57,24 +57,48 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     public void testCarEMF() throws Exception {
         carLifecycleRL(getEMF(TEST_UNIT).createEntityManager());
     }
+
+    @Test
+    public void testTruckEMF() throws Exception {
+    	truckLifecycleRL(getEMF(TEST_UNIT).createEntityManager());
+    }
     
     @Test
-    public void testEMFXA() throws Exception {
+    public void testCarEMFXA() throws Exception {
         EntityManager em = getEMF(XA_TEST_UNIT).createEntityManager();
         carLifecycleXA(ut, em);
         em.close();
     }
 
     @Test
-    public void testDataSourceFactoryLifecycle() throws Exception {
+    public void testTruckEMFXA() throws Exception {
+    	EntityManager em = getEMF(XA_TEST_UNIT).createEntityManager();
+    	truckLifecycleXA(ut, em);
+    	em.close();
+    }
+
+    @Test
+    public void testCarDataSourceFactoryLifecycle() throws Exception {
         carLifecycleRL(getEMF(DSF_TEST_UNIT).createEntityManager());
     }
 
     @Test
-    public void testDataSourceFactoryXALifecycle() throws Exception {
+    public void testTruckDataSourceFactoryLifecycle() throws Exception {
+    	truckLifecycleRL(getEMF(DSF_TEST_UNIT).createEntityManager());
+    }
+
+    @Test
+    public void testCarDataSourceFactoryXALifecycle() throws Exception {
         EntityManager em = getEMF(DSF_XA_TEST_UNIT).createEntityManager();
         carLifecycleXA(ut, em);
         em.close();
+    }
+
+    @Test
+    public void testTruckDataSourceFactoryXALifecycle() throws Exception {
+    	EntityManager em = getEMF(DSF_XA_TEST_UNIT).createEntityManager();
+    	truckLifecycleXA(ut, em);
+    	em.close();
     }
     
 
@@ -106,7 +130,7 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
 
             ut.begin();
             em.joinTransaction();
-            changeToRed(em.find(Car.class, BLUE_CAR_PLATE));
+            changeToRed(em.find(Car.class, BLUE_PLATE));
             em.remove(em.find(Car.class, GREEN_CAR_PLATE));
             em.persist(createBlackCar());
             ut.commit();
@@ -133,8 +157,8 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     private void cleanup(EntityManager em) throws Exception {
         ut.begin();
         em.joinTransaction();
-        delete(em, BLACK_CAR_PLATE);
-        delete(em, BLUE_CAR_PLATE);
+        delete(em, Car.class, BLACK_CAR_PLATE);
+        delete(em, Car.class, BLUE_PLATE);
         ut.commit();
     }
 
@@ -142,7 +166,7 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
         assertEquals(2, car.getNumberOfSeats());
         assertEquals(2000, car.getEngineSize());
         assertEquals("red", car.getColour());
-        assertEquals(BLUE_CAR_PLATE, car.getNumberPlate());
+        assertEquals(BLUE_PLATE, car.getNumberPlate());
     }
 
     @Test
@@ -165,6 +189,25 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     }
 
     @Test
+    public void testTruckEMFBuilderExternalDS() throws Exception {
+    	DataSourceFactory dsf = getService(DataSourceFactory.class, 
+    			"(" + OSGI_JDBC_DRIVER_CLASS + "=org.apache.derby.jdbc.EmbeddedDriver)");
+    	
+    	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
+    			"(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
+    	
+    	Properties jdbcProps = new Properties();
+    	jdbcProps.setProperty("url", "jdbc:derby:memory:DSFTEST;create=true");
+    	
+    	Map<String, Object> props = new HashMap<String, Object>();
+    	props.put("javax.persistence.nonJtaDataSource", dsf.createDataSource(jdbcProps));
+    	props.put("javax.persistence.transactionType", RESOURCE_LOCAL.name());
+    	
+    	EntityManagerFactory emf = emfBuilder.createEntityManagerFactory(props);
+    	truckLifecycleRL(emf.createEntityManager());
+    }
+
+    @Test
     public void testCarEMFBuilderExternalDSXA() throws Exception {
     	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
     			"(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
@@ -177,6 +220,20 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     	EntityManagerFactory emf = emfBuilder.createEntityManagerFactory(props);
     	carLifecycleXA(ut, emf.createEntityManager());
     }
+
+    @Test
+    public void testTruckEMFBuilderExternalDSXA() throws Exception {
+    	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
+    			"(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
+    	
+    	Map<String, Object> props = new HashMap<String, Object>();
+    	props.put("javax.persistence.jtaDataSource", ds);
+    	props.put("javax.persistence.transactionType", JTA.name());
+    	//EclipseLink also needs a non-jta-datasource
+    	props.put("javax.persistence.nonJtaDataSource", ds);
+    	EntityManagerFactory emf = emfBuilder.createEntityManagerFactory(props);
+    	truckLifecycleXA(ut, emf.createEntityManager());
+    }
     
     @Test
     public void testCarEMFBuilderNoNonJTADataSource() throws Exception {
@@ -187,9 +244,25 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
         Properties jdbcProps = new Properties();
         jdbcProps.setProperty("url", "jdbc:derby:memory:TESTNOJTA;create=true");
         props.put("javax.persistence.dataSource", dsf.createDataSource(jdbcProps));
+        props.put("javax.persistence.transactionType", RESOURCE_LOCAL.name());
         
         EntityManagerFactory emf = emfBuilder.createEntityManagerFactory(props);
         carLifecycleRL(emf.createEntityManager());
+    }
+    
+    @Test
+    public void testTruckEMFBuilderNoNonJTADataSource() throws Exception {
+    	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
+    			"(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
+    	
+    	Map<String, Object> props = new HashMap<String, Object>();
+    	Properties jdbcProps = new Properties();
+    	jdbcProps.setProperty("url", "jdbc:derby:memory:TESTNOJTA;create=true");
+    	props.put("javax.persistence.dataSource", dsf.createDataSource(jdbcProps));
+    	props.put("javax.persistence.transactionType", RESOURCE_LOCAL.name());
+    	
+    	EntityManagerFactory emf = emfBuilder.createEntityManagerFactory(props);
+    	truckLifecycleRL(emf.createEntityManager());
     }
 
 }

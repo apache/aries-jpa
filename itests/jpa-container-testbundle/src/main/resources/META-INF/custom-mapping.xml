@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://xmlns.jcp.org/xml/ns/persistence/orm_2_0.xsd"
+    version="2.0">
+
+    <package>org.apache.aries.jpa.container.itest.entities.mapped</package>
+    <entity class="org.apache.aries.jpa.container.itest.entities.mapped.Truck" name="Truck">
+        <named-query name="GET_DEVELOPER">
+            <query>SELECT DISTINCT record FROM Car record ORDER BY record.engineSize</query>
+        </named-query>
+        <attributes>
+            <id name="numberPlate">
+                <column name="PLATE" length="255" />
+            </id>
+            <basic name="colour">
+                <column name="COLOUR" length="255" />
+            </basic>
+            <basic name="engineSize">
+                <column name="ENGINE_SIZE" />
+            </basic>
+            <basic name="maxLoad">
+                <column name="MAX_LOAD" length="255" />
+            </basic>
+        </attributes>
+    </entity>
+</entity-mappings>

@@ -21,11 +21,12 @@ import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 
 import org.apache.aries.jpa.container.itest.entities.Car;
+import org.apache.aries.jpa.container.itest.entities.mapped.Truck;
 import org.junit.Assert;
 import org.osgi.framework.BundleException;
 
 public abstract class AbstractCarJPAITest extends AbstractJPAItest {
-    protected static final String BLUE_CAR_PLATE = "A1AAA";
+    protected static final String BLUE_PLATE = "A1AAA";
     protected static final String GREEN_CAR_PLATE = "B2BBB";
     protected static final String BLACK_CAR_PLATE = "C3CCC";
 
@@ -34,8 +35,17 @@ public abstract class AbstractCarJPAITest extends AbstractJPAItest {
         car.setNumberOfSeats(5);
         car.setEngineSize(1200);
         car.setColour("blue");
-        car.setNumberPlate(BLUE_CAR_PLATE);
+        car.setNumberPlate(BLUE_PLATE);
         return car;
+    }
+
+    protected Truck createBlueTruck() {
+    	Truck truck = new Truck();
+    	truck.setMaxLoad(5000.0d);
+    	truck.setEngineSize(1200);
+    	truck.setColour("blue");
+    	truck.setNumberPlate(BLUE_PLATE);
+    	return truck;
     }
 
     protected Car createGreenCar() {
@@ -64,7 +74,15 @@ public abstract class AbstractCarJPAITest extends AbstractJPAItest {
         assertEquals(5, car.getNumberOfSeats());
         assertEquals(1200, car.getEngineSize());
         assertEquals("blue", car.getColour());
-        assertEquals(BLUE_CAR_PLATE, car.getNumberPlate());
+        assertEquals(BLUE_PLATE, car.getNumberPlate());
+    }
+    
+    protected void assertBlueTruck(Truck truck) {
+    	Assert.assertNotNull("Blue car not found (null)", truck);
+    	assertEquals(5000.0d, truck.getMaxLoad(), 0.0d);
+    	assertEquals(1200, truck.getEngineSize());
+    	assertEquals("blue", truck.getColour());
+    	assertEquals(BLUE_PLATE, truck.getNumberPlate());
     }
 
     protected void assertGreenCar(Car car) {
@@ -92,12 +110,31 @@ public abstract class AbstractCarJPAITest extends AbstractJPAItest {
         em.persist(car);
         em.getTransaction().commit();
 
-        Car car2 = em.find(Car.class, BLUE_CAR_PLATE);
+        Car car2 = em.find(Car.class, BLUE_PLATE);
         assertBlueCar(car2);
         em.getTransaction().begin();
         em.remove(car2);
         em.getTransaction().commit();
         em.close();
+    }
+
+    /**
+     * Create, find and delete truck using resource local transactions
+     * @param emf
+     * @throws BundleException
+     */
+    protected void truckLifecycleRL(EntityManager em) throws BundleException {
+    	em.getTransaction().begin();
+    	Truck truck = createBlueTruck();
+    	em.persist(truck);
+    	em.getTransaction().commit();
+    	
+    	Truck truck2 = em.find(Truck.class, BLUE_PLATE);
+    	assertBlueTruck(truck2);
+    	em.getTransaction().begin();
+    	em.remove(truck2);
+    	em.getTransaction().commit();
+    	em.close();
     }
 
     /**
@@ -109,23 +146,45 @@ public abstract class AbstractCarJPAITest extends AbstractJPAItest {
     protected void carLifecycleXA(UserTransaction ut, EntityManager em) throws Exception {
         ut.begin();
         em.joinTransaction();
-        delete(em, BLUE_CAR_PLATE);
+        delete(em, Car.class, BLUE_PLATE);
         em.persist(createBlueCar());
         ut.commit();
 
-        Car c = em.find(Car.class, BLUE_CAR_PLATE);
+        Car c = em.find(Car.class, BLUE_PLATE);
         assertBlueCar(c);
 
         ut.begin();
         em.joinTransaction();
-        delete(em, BLUE_CAR_PLATE);
+        delete(em, Car.class, BLUE_PLATE);
         ut.commit();
     }
 
-    protected void delete(EntityManager em, String plateId) {
-        Car car = em.find(Car.class, plateId);
-        if (car != null) {
-            em.remove(car);
+    /**
+     * Create, find and delete car using XA Transactions
+     * @param ut
+     * @param em
+     * @throws Exception
+     */
+    protected void truckLifecycleXA(UserTransaction ut, EntityManager em) throws Exception {
+    	ut.begin();
+    	em.joinTransaction();
+    	delete(em, Truck.class, BLUE_PLATE);
+    	em.persist(createBlueTruck());
+    	ut.commit();
+    	
+    	Truck t = em.find(Truck.class, BLUE_PLATE);
+    	assertBlueTruck(t);
+    	
+    	ut.begin();
+    	em.joinTransaction();
+    	delete(em, Truck.class, BLUE_PLATE);
+    	ut.commit();
+    }
+
+    protected <T> void delete(EntityManager em, Class<T> type, String plateId) {
+        T vehicle = em.find(type, plateId);
+        if (vehicle != null) {
+            em.remove(vehicle);
         }
     }
 }
