@@ -24,4 +24,7 @@
 	<persistence-unit name="incompleteTestUnit">
 		<description>Persistence unit for testing an incomplete persistence unit</description>
 	</persistence-unit>
+	<persistence-unit name="incompleteTestUnit2">
+		<description>Second Persistence unit for testing an incomplete persistence unit</description>
+	</persistence-unit>
 </persistence>

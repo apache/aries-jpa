@@ -85,10 +85,9 @@ public class PersistenceProviderTracker extends ServiceTracker<PersistenceProvid
 
         createAndCloseDummyEMF(provider);
 
-        stored.dsTracker = createDataSourceTracker(provider);
-        EntityManagerFactoryBuilder emfBuilder = new AriesEntityManagerFactoryBuilder(provider, punit);
-        Dictionary<String, ?> props = ManagedEMF.createProperties(punit, punit.getBundle());
-        stored.reg = context.registerService(EntityManagerFactoryBuilder.class, emfBuilder , props);
+        stored.builder = new AriesEntityManagerFactoryBuilder(context, provider, punit);
+        Dictionary<String, ?> props = AriesEntityManagerFactoryBuilder.createBuilderProperties(punit, punit.getBundle());
+        stored.reg = context.registerService(EntityManagerFactoryBuilder.class, stored.builder , props);
         return stored;
     }
 
@@ -112,46 +111,17 @@ public class PersistenceProviderTracker extends ServiceTracker<PersistenceProvid
         punit.setNonJtaDataSource(null);
     }
 
-    private ServiceTracker<?, ?> createDataSourceTracker(PersistenceProvider provider) {
-        if (usesDataSource()) {
-            if (!usesDataSourceService()) {
-                LOGGER.warn("Persistence unit " + punit.getPersistenceUnitName() + " refers to a non OSGi service DataSource");
-                return null;
-            }
-            DataSourceTracker dsTracker = new DataSourceTracker(context, provider, punit);
-            dsTracker.open();
-            return dsTracker;
-        } else if (usesDSF()) {
-            DSFTracker dsfTracker = new DSFTracker(context, provider, punit);
-            dsfTracker.open();
-            return dsfTracker;
-        } else {
-            LOGGER.debug("Persistence unit " + punit.getPersistenceUnitName() + " does not refer a DataSource. "
-                         +"It can only be used with EntityManagerFactoryBuilder.");
-            return null;
-        }
-    }
-
-    private boolean usesDataSource() {
-        return punit.getJtaDataSourceName() != null || punit.getNonJtaDataSourceName() != null;
-    }
-
-    private boolean usesDSF() {
-        return DSFTracker.getDriverName(punit) != null;
-    }
-
-    private boolean usesDataSourceService() {
-        return punit.getJtaDataSourceName() != null && punit.getJtaDataSourceName().startsWith(DataSourceTracker.DS_PREFIX)
-            || punit.getNonJtaDataSourceName() != null && punit.getNonJtaDataSourceName().startsWith(DataSourceTracker.DS_PREFIX);
-    }
-
     @Override
     public void removedService(ServiceReference<PersistenceProvider> reference, StoredPerProvider stored) {
         LOGGER.info("Lost provider for " + punit.getPersistenceUnitName() + " " + punit.getPersistenceProviderClassName());
-        if (stored.dsTracker != null) {
-            stored.dsTracker.close();
+        try {
+        	stored.reg.unregister();
+        } catch (Exception e) {
+        	LOGGER.debug("An exception occurred unregistering a persistence unit {}", stored.builder.getPUName());
         }
-        stored.reg.unregister();
+        if (stored.builder != null) {
+            stored.builder.close();
+        }
         super.removedService(reference, stored);
     }
 }

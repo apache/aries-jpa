@@ -56,7 +56,7 @@ public class EclipseAdditionalTest extends AbstractJPAItest {
 
     @Test
     public void testEntityManagerFactoryBuilderWithIncompletePersistenceUnitAddPlugin() throws Exception {
-    	EntityManagerFactoryBuilder builder = getService(EntityManagerFactoryBuilder.class, "(osgi.unit.name=incompleteTestUnit)", 1000);
+    	EntityManagerFactoryBuilder builder = getService(EntityManagerFactoryBuilder.class, "(osgi.unit.name=incompleteTestUnit2)", 1000);
     	
     	DataSourceFactory dsf = getService(DataSourceFactory.class, 
     			"(" + OSGI_JDBC_DRIVER_CLASS + "=org.apache.derby.jdbc.EmbeddedDriver)");

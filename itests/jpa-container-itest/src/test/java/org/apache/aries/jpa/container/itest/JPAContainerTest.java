@@ -54,6 +54,15 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     }
 
     @Test
+    public void testTruckEMFBuilder() throws Exception {
+    	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
+    			"(osgi.unit.name=" + DSF_TEST_UNIT + ")");
+    	Map<String, Object> props = new HashMap<String, Object>();
+    	EntityManagerFactory emf = emfBuilder.createEntityManagerFactory(props);
+    	truckLifecycleRL(emf.createEntityManager());
+    }
+
+    @Test
     public void testCarEMF() throws Exception {
         carLifecycleRL(getEMF(TEST_UNIT).createEntityManager());
     }

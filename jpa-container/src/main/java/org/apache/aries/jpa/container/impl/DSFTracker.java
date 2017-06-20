@@ -19,16 +19,14 @@
 package org.apache.aries.jpa.container.impl;
 
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
 
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 
 import org.apache.aries.jpa.container.parser.impl.PersistenceUnit;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.jdbc.DataSourceFactory;
@@ -36,34 +34,34 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DSFTracker extends ServiceTracker<DataSourceFactory, ManagedEMF>{
-    private static final String JDBC_DRIVER = "javax.persistence.jdbc.driver";
-    private static final String JDBC_URL = "javax.persistence.jdbc.url";
-    private static final String JDBC_USER = "javax.persistence.jdbc.user";
-    private static final String JDBC_PASSWORD = "javax.persistence.jdbc.password"; // NOSONAR
+public class DSFTracker extends ServiceTracker<DataSourceFactory, DataSourceFactory>{
+    static final String JDBC_DRIVER = "javax.persistence.jdbc.driver";
+    static final String JDBC_URL = "javax.persistence.jdbc.url";
+    static final String JDBC_USER = "javax.persistence.jdbc.user";
+    static final String JDBC_PASSWORD = "javax.persistence.jdbc.password"; // NOSONAR
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DSFTracker.class);
 
 
-    private PersistenceProvider provider;
-    private PersistenceUnit punit;
-
-    public DSFTracker(BundleContext context, PersistenceProvider provider, PersistenceUnit punit) {
-        super(context, createFilter(context, punit), null);
-        this.provider = provider;
-        this.punit = punit;
+    private final AriesEntityManagerFactoryBuilder builder;
+	private final String driverClass;
+    
+    public DSFTracker(BundleContext context, AriesEntityManagerFactoryBuilder builder, 
+    		String driverClass) {
+        super(context, createFilter(context, driverClass, builder.getPUName()), null);
+        this.builder = builder;
+		this.driverClass = driverClass;
     }
 
-    static Filter createFilter(BundleContext context, PersistenceUnit punit) {
-        String driverName = getDriverName(punit);
-        if (driverName == null) {
+    static Filter createFilter(BundleContext context, String driverClass, String puName) {
+        if (driverClass == null) {
             throw new IllegalArgumentException("No javax.persistence.jdbc.driver supplied in persistence.xml");
         }
         String filter = String.format("(&(objectClass=%s)(%s=%s))",
                                       DataSourceFactory.class.getName(),
                                       DataSourceFactory.OSGI_JDBC_DRIVER_CLASS,
-                                      driverName);
-        LOGGER.info("Tracking DataSourceFactory for punit " + punit.getPersistenceUnitName() + " with filter " + filter);
+                                      driverClass);
+        LOGGER.info("Tracking DataSourceFactory for punit " + puName + " with filter " + filter);
         try {
             return context.createFilter(filter);
         } catch (InvalidSyntaxException e) {
@@ -72,53 +70,49 @@ public class DSFTracker extends ServiceTracker<DataSourceFactory, ManagedEMF>{
     }
 
     public static String getDriverName(PersistenceUnit punit) {
-        return (String)punit.getProperties().get(JDBC_DRIVER);
+        return (String)punit.getProperties().getProperty(JDBC_DRIVER);
     }
 
     @Override
-    public ManagedEMF addingService(ServiceReference<DataSourceFactory> reference) {
-        LOGGER.info("Found DataSourceFactory for " + punit.getPersistenceUnitName() + " "
-                    + getDriverName(punit));
+    public DataSourceFactory addingService(ServiceReference<DataSourceFactory> reference) {
+        LOGGER.info("Found DataSourceFactory for " + builder.getPUName() + " of type "
+                    + driverClass);
         try {
-            DataSourceFactory dsf = context.getService(reference);
-            DataSource ds = createDataSource(dsf);
-            if (punit.getTransactionType() == PersistenceUnitTransactionType.JTA) {
-                punit.setJtaDataSource(ds);
-            } else {
-                punit.setNonJtaDataSource(ds);
-            }
-            BundleContext containerContext = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
-            return new ManagedEMF(containerContext, punit.getBundle(), provider, punit);
+            DataSourceFactory dsf = super.addingService(reference);
+            
+            if(dsf != null)
+            	builder.foundDSF(dsf);
+            return dsf;
         } catch (Exception e) {
-            LOGGER.error("Error creating DataSource for punit " + punit.getPersistenceUnitName(), e);
+            LOGGER.error("Error creating DataSource for punit " + builder.getPUName(), e);
             return null;
         }
     }
 
-    private DataSource createDataSource(DataSourceFactory dsf) {
+    static DataSource createDataSource(DataSourceFactory dsf, Map<String, Object> punitProps, String punitName) {
         try {
             Properties props = new Properties();
-            put(props, DataSourceFactory.JDBC_URL, punit, JDBC_URL);
-            put(props, DataSourceFactory.JDBC_USER, punit, JDBC_USER);
-            put(props, DataSourceFactory.JDBC_PASSWORD, punit, JDBC_PASSWORD);
+            put(props, DataSourceFactory.JDBC_URL, punitProps, JDBC_URL);
+            put(props, DataSourceFactory.JDBC_USER, punitProps, JDBC_USER);
+            put(props, DataSourceFactory.JDBC_PASSWORD, punitProps, JDBC_PASSWORD);
             return dsf.createDataSource(props);
         } catch (SQLException e) {
-            String msg = "Error creating DataSource for persistence unit " + punit + "." + e.getMessage();
+            String msg = "Error creating DataSource for persistence unit " + punitName + ". " + e.getMessage();
             throw new RuntimeException(msg, e); // NOSONAR
         }
     }
 
-    private static void put(Properties props, String destKey, PersistenceUnit punit, String sourceKey) {
-        Object value = punit.getProperties().get(sourceKey);
+    private static void put(Properties props, String destKey, Map<String, Object> punitProps, String sourceKey) {
+        Object value = punitProps.get(sourceKey);
         if (value != null) {
-            props.put(destKey, value);
+            props.setProperty(destKey, String.valueOf(value));
         }
     }
 
     @Override
-    public void removedService(ServiceReference<DataSourceFactory> reference, ManagedEMF managedEMF) {
-        LOGGER.info("Lost DataSourceFactory for " + punit.getPersistenceUnitName() + " " + getDriverName(punit));
-        managedEMF.close();
-        super.removedService(reference, managedEMF);
+    public void removedService(ServiceReference<DataSourceFactory> reference, DataSourceFactory dsf) {
+        LOGGER.info("Lost DataSourceFactory for " + builder.getPUName() + " of type " + driverClass);
+        builder.lostDSF(dsf, getService());
+        super.removedService(reference, dsf);
     }
 }

@@ -20,9 +20,8 @@ package org.apache.aries.jpa.container.impl;
 
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.jpa.EntityManagerFactoryBuilder;
-import org.osgi.util.tracker.ServiceTracker;
 
 public class StoredPerProvider {
-    ServiceTracker<?, ?> dsTracker;
+	AriesEntityManagerFactoryBuilder builder;
     ServiceRegistration<EntityManagerFactoryBuilder> reg;
 }

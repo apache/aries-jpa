@@ -21,12 +21,7 @@ package org.apache.aries.jpa.container.impl;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import javax.persistence.spi.PersistenceUnitTransactionType;
-
-import org.apache.aries.jpa.container.impl.DataSourceTracker;
-import org.apache.aries.jpa.container.parser.impl.PersistenceUnit;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
@@ -36,24 +31,18 @@ public class DataSourceTrackerTest {
     
     @Test
     public void testCreateFilterFull() throws InvalidSyntaxException {
-        PersistenceUnit punit = mock(PersistenceUnit.class);
-        when(punit.getJtaDataSourceName()).thenReturn("osgi:service/javax.sql.DataSource/(osgi.jndi.service.name=tasklist)");
-        when(punit.getTransactionType()).thenReturn(PersistenceUnitTransactionType.JTA);
         BundleContext context = mock(BundleContext.class);
         
-        DataSourceTracker.createFilter(context, punit);
+        DataSourceTracker.createFilter(context, "osgi:service/javax.sql.DataSource/(osgi.jndi.service.name=tasklist)", "test");
 
         verify(context, atLeastOnce()).createFilter(Mockito.eq("(&(objectClass=javax.sql.DataSource)(osgi.jndi.service.name=tasklist))"));
     }
     
     @Test
     public void testCreateFilterSimple() throws InvalidSyntaxException {
-        PersistenceUnit punit = mock(PersistenceUnit.class);
-        when(punit.getJtaDataSourceName()).thenReturn("tasklist");
-        when(punit.getTransactionType()).thenReturn(PersistenceUnitTransactionType.JTA);
         BundleContext context = mock(BundleContext.class);
         
-        DataSourceTracker.createFilter(context, punit);
+        DataSourceTracker.createFilter(context, "tasklist", "test");
 
         verify(context, atLeastOnce()).createFilter(Mockito.eq("(&(objectClass=javax.sql.DataSource)(osgi.jndi.service.name=tasklist))"));
     }
