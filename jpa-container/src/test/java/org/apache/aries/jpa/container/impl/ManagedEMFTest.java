@@ -27,6 +27,7 @@ import java.util.Hashtable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cm.ConfigurationException;
@@ -41,7 +42,15 @@ public class ManagedEMFTest {
     public void testEmfWithoutProps() throws InvalidSyntaxException, ConfigurationException {
     	ManagedEMF emf = new ManagedEMF(builder, "test");
         emf.updated(null);
-        verify(builder).createEntityManagerFactory(null);
+        Mockito.verifyZeroInteractions(builder);
+        
+        Hashtable<String, Object> props = new Hashtable<String, Object>();
+		emf.updated(props);
+        verify(builder).createEntityManagerFactory(props);
+        
+        emf.updated(null);
+        verify(builder).closeEMF();
+        
     }
 
     @Test

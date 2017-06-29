@@ -22,6 +22,7 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
@@ -40,6 +41,8 @@ public class ManagedEMF implements ManagedService {
 	private final AriesEntityManagerFactoryBuilder builder;
 	
 	private final String pUnitName;
+	
+	private final AtomicBoolean configured = new AtomicBoolean(false);
 
 	public ManagedEMF(AriesEntityManagerFactoryBuilder builder, String name) {
 		this.builder = builder;
@@ -48,6 +51,21 @@ public class ManagedEMF implements ManagedService {
 
 	@Override
 	public void updated(Dictionary<String, ?> properties) throws ConfigurationException {
+		
+		if(properties == null) {
+			if(configured.getAndSet(false)) {
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("The configuration has been deleted for persistence unit {}. Destroying the EMF", pUnitName);
+				}
+				builder.closeEMF();
+			} else {
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("Ignoring the unset configuration for persistence unit {}", pUnitName);
+				}
+				return;
+			}
+		}
+		
 		Map<String, Object> overrides = (properties != null) ? asMap(properties) : null;
 		LOGGER.info("Configuration received for persistence unit {}", pUnitName);
 		if (LOGGER.isDebugEnabled()) {
@@ -55,6 +73,7 @@ public class ManagedEMF implements ManagedService {
 		}
 		
 		builder.createEntityManagerFactory(overrides);
+		configured.set(true);
 	}
 
 	private Map<String, Object> asMap(Dictionary<String, ?> dict) {
