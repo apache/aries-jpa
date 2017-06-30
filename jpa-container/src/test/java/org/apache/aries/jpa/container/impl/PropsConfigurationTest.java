@@ -29,6 +29,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -53,6 +54,7 @@ import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -140,7 +142,7 @@ public class PropsConfigurationTest {
 				}
 			});
 		
-		when(punitContext.registerService(eq(EntityManagerFactory.class), eq(emf), 
+		when(punitContext.registerService(eq(EntityManagerFactory.class), any(EntityManagerFactory.class), 
 				any(Dictionary.class))).thenReturn(emfReg);
 		
 		when(emf.isOpen()).thenReturn(true);
@@ -234,7 +236,7 @@ public class PropsConfigurationTest {
 		
 		verify(punit).setNonJtaDataSource(ds);
 		verify(punitContext).registerService(eq(EntityManagerFactory.class),
-				eq(emf), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
+				any(EntityManagerFactory.class), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
 		
 		emfb.close();
 		
@@ -262,7 +264,7 @@ public class PropsConfigurationTest {
         
         
         verify(punitContext).registerService(eq(EntityManagerFactory.class),
-        		eq(emf), and(argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")),
+        		any(EntityManagerFactory.class), and(argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")),
         				argThat(servicePropsMatcher("hibernate.hbm2ddl.auto", "create-drop"))));
         
         emfb.close();
@@ -291,7 +293,7 @@ public class PropsConfigurationTest {
     	
     	verify(punit).setJtaDataSource(ds);
     	verify(punitContext).registerService(eq(EntityManagerFactory.class),
-    			eq(emf), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
+    			any(EntityManagerFactory.class), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
     	
     	emfb.close();
 		verify(emfReg).unregister();
@@ -319,7 +321,8 @@ public class PropsConfigurationTest {
     	
     	verify(punit).setJtaDataSource(ds);
     	verify(punitContext).registerService(eq(EntityManagerFactory.class),
-    			eq(emf), and(and(argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")),
+    			any(EntityManagerFactory.class), 
+    			and(and(argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")),
     					argThat(servicePropsMatcher("javax.persistence.jdbc.user", JDBC_USER))),
     					not(argThat(servicePropsMatcher("javax.persistence.jdbc.password", JDBC_PASSWORD)))));
     	
@@ -362,7 +365,7 @@ public class PropsConfigurationTest {
     	
     	verify(punit).setJtaDataSource(ds);
     	verify(punitContext).registerService(eq(EntityManagerFactory.class),
-    			eq(emf), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
+    			any(EntityManagerFactory.class), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
     	
     	
     	try {
@@ -394,7 +397,7 @@ public class PropsConfigurationTest {
     	
     	verify(punit).setJtaDataSource(ds);
     	verify(punitContext).registerService(eq(EntityManagerFactory.class),
-    			eq(emf), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
+    			any(EntityManagerFactory.class), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
     	
     	emfb.close();
     }
@@ -419,7 +422,63 @@ public class PropsConfigurationTest {
     	
     	verify(punit).setNonJtaDataSource(ds);
     	verify(punitContext).registerService(eq(EntityManagerFactory.class),
-    			eq(emf), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
+    			any(EntityManagerFactory.class), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
+    	
+    	emfb.close();
+    }
+    
+    @Test
+	public void testReturnedEmfClose() throws InvalidSyntaxException, ConfigurationException {
+		
+		when(provider.createContainerEntityManagerFactory(eq(punit), 
+				eq(singletonMap(PersistenceUnitTransactionType.class.getName(), JTA))))
+			.thenReturn(emf);
+		
+		Map<String, Object> props = new Hashtable<String, Object>();
+		props.put("javax.persistence.dataSource", ds);
+		
+		AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
+				containerContext, provider, punit);
+		
+		EntityManagerFactory returnedEMF = emfb.createEntityManagerFactory(props);
+		
+		
+		verify(punit).setNonJtaDataSource(ds);
+		verify(punitContext).registerService(eq(EntityManagerFactory.class),
+				any(EntityManagerFactory.class), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
+		
+		returnedEMF.close();
+		
+		verify(emfReg).unregister();
+		verify(emf).close();
+		
+		emfb.close();
+	}
+
+    @Test
+    public void testServiceEmfClose() throws InvalidSyntaxException, ConfigurationException {
+    	
+    	when(provider.createContainerEntityManagerFactory(eq(punit), 
+    			eq(singletonMap(PersistenceUnitTransactionType.class.getName(), JTA))))
+    	.thenReturn(emf);
+    	
+    	Map<String, Object> props = new Hashtable<String, Object>();
+    	props.put("javax.persistence.dataSource", ds);
+    	
+    	AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
+    			containerContext, provider, punit);
+    	
+    	emfb.createEntityManagerFactory(props);
+    	
+    	ArgumentCaptor<EntityManagerFactory> emfCaptor = ArgumentCaptor.forClass(EntityManagerFactory.class);
+    	
+    	verify(punit).setNonJtaDataSource(ds);
+    	verify(punitContext).registerService(eq(EntityManagerFactory.class),
+    			emfCaptor.capture(), argThat(servicePropsMatcher(JPA_UNIT_NAME, "test-props")));
+    	
+    	emfCaptor.getValue().close();
+    	
+    	verifyZeroInteractions(emfReg, emf);
     	
     	emfb.close();
     }

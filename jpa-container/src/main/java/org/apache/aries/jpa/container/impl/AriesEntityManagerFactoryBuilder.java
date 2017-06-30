@@ -18,6 +18,9 @@
  */
 package org.apache.aries.jpa.container.impl;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -163,7 +166,22 @@ public class AriesEntityManagerFactoryBuilder implements EntityManagerFactoryBui
 		
 		closeEMF();
 		
-		return createAndPublishEMF(processedProperties);
+		final EntityManagerFactory toUse = createAndPublishEMF(processedProperties);
+		
+		return (EntityManagerFactory) Proxy.newProxyInstance(getClass().getClassLoader(), 
+				new Class<?>[] {EntityManagerFactory.class}, new InvocationHandler() {
+					
+					@Override
+					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+						if("close".equals(method.getName())) {
+							// Close the registration as per the spec
+							closeEMF();
+							// Do not delegate as the closeEMF call already closes
+							return null;
+						}
+						return method.invoke(toUse, args);
+					}
+				});
 	}
 
 	public String getPUName() {
@@ -336,7 +354,7 @@ public class AriesEntityManagerFactoryBuilder implements EntityManagerFactoryBui
 			}
 		}
 		
-		EntityManagerFactory tmp = provider.createContainerEntityManagerFactory(persistenceUnit, overrides);
+		final EntityManagerFactory tmp = provider.createContainerEntityManagerFactory(persistenceUnit, overrides);
 		boolean register = false;
 		synchronized (this) {
 			if(emf == null) {
@@ -349,7 +367,20 @@ public class AriesEntityManagerFactoryBuilder implements EntityManagerFactoryBui
 			Dictionary<String, Object> props = createBuilderProperties(overrides);
 			BundleContext uctx = bundle.getBundleContext();
 			ServiceRegistration<EntityManagerFactory> tmpReg = 
-					uctx.registerService(EntityManagerFactory.class, emf, props);
+					uctx.registerService(EntityManagerFactory.class, 
+							(EntityManagerFactory) Proxy.newProxyInstance(getClass().getClassLoader(), 
+									new Class<?>[] {EntityManagerFactory.class}, 
+									new InvocationHandler() {
+										
+										@Override
+										public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+											if("close".equals(method.getName())) {
+												// Ignore close as per the spec
+												return null;
+											}
+											return method.invoke(tmp, args);
+										}
+									}), props);
 			
 			synchronized (this) {
 				if(emf == tmp) {
