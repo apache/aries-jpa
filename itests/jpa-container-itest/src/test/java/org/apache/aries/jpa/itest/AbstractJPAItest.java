@@ -19,6 +19,7 @@ import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.CoreOptions.systemPackage;
 import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 import static org.ops4j.pax.exam.CoreOptions.vmOption;
 import static org.ops4j.pax.exam.CoreOptions.when;
@@ -268,6 +269,23 @@ public abstract class AbstractJPAItest {
                          mvnBundle("org.hibernate", "hibernate-entitymanager"),
                          mvnBundle("org.hibernate", "hibernate-osgi")
             );
+    }
+    
+    protected Option hibernate5_2() {
+    	return composite(
+    			systemPackage("javax.xml.stream;version=1.0"), 
+    			systemPackage("javax.xml.stream.events;version=1.0"),
+				systemPackage("javax.xml.stream.util;version=1.0"),
+    			mavenBundle("org.apache.servicemix.bundles", "org.apache.servicemix.bundles.antlr", "2.7.7_5"),
+				mavenBundle("org.apache.servicemix.bundles", "org.apache.servicemix.bundles.dom4j", "1.6.1_5"),
+				mavenBundle("com.fasterxml", "classmate", "1.3.0"),
+				mavenBundle("org.javassist", "javassist", "3.20.0-GA"),
+				mavenBundle("org.jboss.logging", "jboss-logging", "3.3.0.Final"),
+				mavenBundle("org.jboss", "jandex", "2.0.3.Final"),
+				mavenBundle("org.hibernate.common", "hibernate-commons-annotations", "5.0.1.Final"),
+				mavenBundle("org.hibernate", "hibernate-core", "5.2.10.Final"),
+				mavenBundle("org.hibernate", "hibernate-osgi", "5.2.10.Final")
+    			);
     }
 
     protected Option derbyDSF() {

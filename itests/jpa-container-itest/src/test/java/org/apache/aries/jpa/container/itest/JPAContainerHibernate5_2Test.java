@@ -15,44 +15,33 @@
  */
 package org.apache.aries.jpa.container.itest;
 
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-
-import org.apache.aries.jpa.container.itest.entities.Car;
-import org.eclipse.persistence.internal.weaving.PersistenceWeaved;
-import org.junit.Test;
+import org.hibernate.osgi.HibernateBundleActivator;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
-public class JPAContainerEclipseLinkTest extends JPAContainerTest {
+public class JPAContainerHibernate5_2Test extends JPAContainerTest {
 
     @Configuration
-    public Option[] eclipseLinkConfig() {
+    public Option[] configuration() {
         return new Option[] {
             baseOptions(), //
             ariesJpa21(), //
-            jta12Bundles(), //
-            eclipseLink(), //
             derbyDSF(), //
-            testBundle()
+            jta12Bundles(), //
+            hibernate5_2(), //
+            testBundle(), //
         };
-    }
-
-    @Test
-    public void testClassIsWoven() throws Exception {
-        assertTrue("Not PersistenceCapable",
-                   Arrays.asList(Car.class.getInterfaces()).contains(PersistenceWeaved.class));
     }
     
 	@Override
 	protected String getProviderClassName() {
-		return "org.eclipse.persistence.jpa.PersistenceProvider";
+		return "org.hibernate.jpa.HibernatePersistenceProvider";
 	}
 
 	@Override
 	protected Bundle getProviderBundle() {
-		return getBundleByName("org.apache.aries.jpa.eclipselink.adapter");
+		return FrameworkUtil.getBundle(HibernateBundleActivator.class);
 	}
 }

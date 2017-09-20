@@ -15,8 +15,11 @@
  */
 package org.apache.aries.jpa.container.itest;
 
+import org.hibernate.osgi.HibernateBundleActivator;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 public class JPAContainerHibernateTest extends JPAContainerTest {
 
@@ -31,4 +34,14 @@ public class JPAContainerHibernateTest extends JPAContainerTest {
             testBundle(), //
         };
     }
+    
+	@Override
+	protected String getProviderClassName() {
+		return "org.hibernate.ejb.HibernatePersistence";
+	}
+
+	@Override
+	protected Bundle getProviderBundle() {
+		return FrameworkUtil.getBundle(HibernateBundleActivator.class);
+	}
 }

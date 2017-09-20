@@ -85,7 +85,7 @@ public class PersistenceProviderTracker extends ServiceTracker<PersistenceProvid
 
         createAndCloseDummyEMF(provider);
 
-        stored.builder = new AriesEntityManagerFactoryBuilder(context, provider, punit);
+        stored.builder = new AriesEntityManagerFactoryBuilder(context, provider, reference.getBundle(), punit);
         Dictionary<String, ?> props = AriesEntityManagerFactoryBuilder.createBuilderProperties(punit, punit.getBundle());
         stored.reg = context.registerService(EntityManagerFactoryBuilder.class, stored.builder , props);
         return stored;

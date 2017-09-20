@@ -35,6 +35,7 @@ import org.apache.aries.jpa.container.itest.entities.Car;
 import org.apache.aries.jpa.itest.AbstractCarJPAITest;
 import org.apache.aries.jpa.supplier.EmSupplier;
 import org.junit.Test;
+import org.osgi.framework.Bundle;
 import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.jdbc.DataSourceFactory;
@@ -44,10 +45,17 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     @Inject
     Coordinator coordinator;
 
+    protected abstract String getProviderClassName();
+    protected abstract Bundle getProviderBundle();
+    
     @Test
     public void testCarEMFBuilder() throws Exception {
         EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
                                                             "(osgi.unit.name=" + DSF_TEST_UNIT + ")");
+        
+        assertEquals(getProviderClassName(), emfBuilder.getPersistenceProviderName());
+    	assertEquals(getProviderBundle(), emfBuilder.getPersistenceProviderBundle());
+        
         Map<String, Object> props = new HashMap<String, Object>();
         EntityManagerFactory emf = emfBuilder.createEntityManagerFactory(props);
         carLifecycleRL(emf.createEntityManager());
@@ -57,6 +65,10 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     public void testTruckEMFBuilder() throws Exception {
     	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
     			"(osgi.unit.name=" + DSF_TEST_UNIT + ")");
+
+    	assertEquals(getProviderClassName(), emfBuilder.getPersistenceProviderName());
+    	assertEquals(getProviderBundle(), emfBuilder.getPersistenceProviderBundle());
+    	
     	Map<String, Object> props = new HashMap<String, Object>();
     	EntityManagerFactory emf = emfBuilder.createEntityManagerFactory(props);
     	truckLifecycleRL(emf.createEntityManager());
@@ -186,6 +198,9 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
     			"(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
     	
+        assertEquals(getProviderClassName(), emfBuilder.getPersistenceProviderName());
+    	assertEquals(getProviderBundle(), emfBuilder.getPersistenceProviderBundle());
+    	
     	Properties jdbcProps = new Properties();
     	jdbcProps.setProperty("url", "jdbc:derby:memory:DSFTEST;create=true");
     	
@@ -204,7 +219,10 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     	
     	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
     			"(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
-    	
+    	 
+        assertEquals(getProviderClassName(), emfBuilder.getPersistenceProviderName());
+    	assertEquals(getProviderBundle(), emfBuilder.getPersistenceProviderBundle());
+        
     	Properties jdbcProps = new Properties();
     	jdbcProps.setProperty("url", "jdbc:derby:memory:DSFTEST;create=true");
     	
@@ -220,7 +238,10 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     public void testCarEMFBuilderExternalDSXA() throws Exception {
     	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
     			"(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
-
+    	 
+        assertEquals(getProviderClassName(), emfBuilder.getPersistenceProviderName());
+    	assertEquals(getProviderBundle(), emfBuilder.getPersistenceProviderBundle());
+        
     	Map<String, Object> props = new HashMap<String, Object>();
     	props.put("javax.persistence.jtaDataSource", ds);
     	props.put("javax.persistence.transactionType", JTA.name());
@@ -234,7 +255,10 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     public void testTruckEMFBuilderExternalDSXA() throws Exception {
     	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
     			"(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
-    	
+    	 
+        assertEquals(getProviderClassName(), emfBuilder.getPersistenceProviderName());
+    	assertEquals(getProviderBundle(), emfBuilder.getPersistenceProviderBundle());
+        
     	Map<String, Object> props = new HashMap<String, Object>();
     	props.put("javax.persistence.jtaDataSource", ds);
     	props.put("javax.persistence.transactionType", JTA.name());
@@ -248,6 +272,9 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     public void testCarEMFBuilderNoNonJTADataSource() throws Exception {
         EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
                         "(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
+        
+        assertEquals(getProviderClassName(), emfBuilder.getPersistenceProviderName());
+    	assertEquals(getProviderBundle(), emfBuilder.getPersistenceProviderBundle());
         
         Map<String, Object> props = new HashMap<String, Object>();
         Properties jdbcProps = new Properties();
@@ -263,7 +290,10 @@ public abstract class JPAContainerTest extends AbstractCarJPAITest {
     public void testTruckEMFBuilderNoNonJTADataSource() throws Exception {
     	EntityManagerFactoryBuilder emfBuilder = getService(EntityManagerFactoryBuilder.class,
     			"(osgi.unit.name=" + EXTERNAL_TEST_UNIT + ")");
-    	
+    	 
+        assertEquals(getProviderClassName(), emfBuilder.getPersistenceProviderName());
+    	assertEquals(getProviderBundle(), emfBuilder.getPersistenceProviderBundle());
+        
     	Map<String, Object> props = new HashMap<String, Object>();
     	Properties jdbcProps = new Properties();
     	jdbcProps.setProperty("url", "jdbc:derby:memory:TESTNOJTA;create=true");

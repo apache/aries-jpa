@@ -21,6 +21,7 @@ package org.apache.aries.jpa.container.impl;
 import static java.util.Collections.singletonMap;
 import static javax.persistence.spi.PersistenceUnitTransactionType.JTA;
 import static javax.persistence.spi.PersistenceUnitTransactionType.RESOURCE_LOCAL;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.AdditionalMatchers.and;
@@ -29,7 +30,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -75,6 +75,8 @@ import org.osgi.service.jdbc.DataSourceFactory;
 @RunWith(MockitoJUnitRunner.class)
 public class PropsConfigurationTest {
 
+	private static final String ECLIPSE_PERSISTENCE_PROVIDER = "org.eclipse.persistence.jpa.PersistenceProvider";
+
 	private static final String JDBC_PASSWORD = "123456";
 
 	private static final String JDBC_USER = "bob";
@@ -94,7 +96,7 @@ public class PropsConfigurationTest {
 	BundleContext containerContext, punitContext;
 	
 	@Mock
-	Bundle punitBundle;
+	Bundle punitBundle, providerBundle;
 	
 	@Mock
 	EntityManagerFactory emf;
@@ -122,7 +124,7 @@ public class PropsConfigurationTest {
 		
 		when(punit.getPersistenceUnitName()).thenReturn("test-props");
 		when(punit.getPersistenceProviderClassName())
-			.thenReturn("org.eclipse.persistence.jpa.PersistenceProvider");
+			.thenReturn(ECLIPSE_PERSISTENCE_PROVIDER);
 		when(punit.getTransactionType()).thenReturn(PersistenceUnitTransactionType.JTA);
 		when(punit.getBundle()).thenReturn(punitBundle);
 		when(punit.getProperties()).thenReturn(punitProperties);
@@ -161,7 +163,7 @@ public class PropsConfigurationTest {
 	public void testRegistersManagedEMF() throws InvalidSyntaxException, ConfigurationException {
 		
 		AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-				containerContext, provider, punit);
+				containerContext, provider, providerBundle, punit);
 		
 		verify(containerContext).registerService(eq(ManagedService.class),
 				any(ManagedService.class), argThat(servicePropsMatcher(
@@ -201,7 +203,10 @@ public class PropsConfigurationTest {
     		.thenReturn(emf);
     	
     	AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-        		containerContext, provider, punit);
+        		containerContext, provider, providerBundle, punit);
+    	
+    	assertEquals(ECLIPSE_PERSISTENCE_PROVIDER, emfb.getPersistenceProviderName());
+    	assertEquals(providerBundle, emfb.getPersistenceProviderBundle());
     	
     	try {
     		emfb.createEntityManagerFactory(null);
@@ -230,9 +235,12 @@ public class PropsConfigurationTest {
 		props.put("javax.persistence.dataSource", ds);
 		
 		AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-				containerContext, provider, punit);
-		emfb.createEntityManagerFactory(props);
+				containerContext, provider, providerBundle, punit);
 		
+		assertEquals(ECLIPSE_PERSISTENCE_PROVIDER, emfb.getPersistenceProviderName());
+    	assertEquals(providerBundle, emfb.getPersistenceProviderBundle());
+		
+		emfb.createEntityManagerFactory(props);
 		
 		verify(punit).setNonJtaDataSource(ds);
 		verify(punitContext).registerService(eq(EntityManagerFactory.class),
@@ -259,7 +267,7 @@ public class PropsConfigurationTest {
         props.put("javax.persistence.dataSource", ds);
        
         AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-        		containerContext, provider, punit);
+        		containerContext, provider, providerBundle, punit);
         emfb.createEntityManagerFactory(props);
         
         
@@ -289,7 +297,7 @@ public class PropsConfigurationTest {
     			any(Map.class))).thenReturn(emf);
     	
     	AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-    			containerContext, provider, punit);
+    			containerContext, provider, providerBundle, punit);
     	
     	verify(punit).setJtaDataSource(ds);
     	verify(punitContext).registerService(eq(EntityManagerFactory.class),
@@ -317,7 +325,7 @@ public class PropsConfigurationTest {
     			any(Map.class))).thenReturn(emf);
     	
     	AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-    			containerContext, provider, punit);
+    			containerContext, provider, providerBundle, punit);
     	
     	verify(punit).setJtaDataSource(ds);
     	verify(punitContext).registerService(eq(EntityManagerFactory.class),
@@ -351,7 +359,7 @@ public class PropsConfigurationTest {
     			any(Map.class))).thenReturn(emf);
     	
     	AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-    			containerContext, provider, punit);
+    			containerContext, provider, providerBundle, punit);
 
     	verifyZeroInteractions(provider);
     	
@@ -393,7 +401,7 @@ public class PropsConfigurationTest {
     			any(Map.class))).thenReturn(emf);
     	
     	AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-    			containerContext, provider, punit);
+    			containerContext, provider, providerBundle, punit);
     	
     	verify(punit).setJtaDataSource(ds);
     	verify(punitContext).registerService(eq(EntityManagerFactory.class),
@@ -418,7 +426,7 @@ public class PropsConfigurationTest {
     			any(Map.class))).thenReturn(emf);
     	
     	AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-    			containerContext, provider, punit);
+    			containerContext, provider, providerBundle, punit);
     	
     	verify(punit).setNonJtaDataSource(ds);
     	verify(punitContext).registerService(eq(EntityManagerFactory.class),
@@ -438,7 +446,7 @@ public class PropsConfigurationTest {
 		props.put("javax.persistence.dataSource", ds);
 		
 		AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-				containerContext, provider, punit);
+				containerContext, provider, providerBundle, punit);
 		
 		EntityManagerFactory returnedEMF = emfb.createEntityManagerFactory(props);
 		
@@ -466,7 +474,7 @@ public class PropsConfigurationTest {
     	props.put("javax.persistence.dataSource", ds);
     	
     	AriesEntityManagerFactoryBuilder emfb = new AriesEntityManagerFactoryBuilder(
-    			containerContext, provider, punit);
+    			containerContext, provider, providerBundle, punit);
     	
     	emfb.createEntityManagerFactory(props);
     	

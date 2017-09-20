@@ -67,6 +67,7 @@ public class AriesEntityManagerFactoryBuilder implements EntityManagerFactoryBui
 	private boolean closed;
 
 	private final PersistenceProvider provider;
+	private final Bundle providerBundle;
 	private final PersistenceUnit persistenceUnit;
 	private final BundleContext containerContext;
 	private final PersistenceUnitTransactionType originalTxType;
@@ -83,8 +84,10 @@ public class AriesEntityManagerFactoryBuilder implements EntityManagerFactoryBui
 	private boolean complete;
 
 
-	public AriesEntityManagerFactoryBuilder(BundleContext containerContext, PersistenceProvider provider, PersistenceUnit persistenceUnit) {
+
+	public AriesEntityManagerFactoryBuilder(BundleContext containerContext, PersistenceProvider provider, Bundle providerBundle, PersistenceUnit persistenceUnit) {
 		this.provider = provider;
+		this.providerBundle = providerBundle;
 		this.persistenceUnit = persistenceUnit;
 		this.containerContext = containerContext;
 		this.originalTxType = persistenceUnit.getTransactionType();
@@ -137,6 +140,17 @@ public class AriesEntityManagerFactoryBuilder implements EntityManagerFactoryBui
         return persistenceUnit.getJtaDataSourceName() != null && persistenceUnit.getJtaDataSourceName().startsWith(DataSourceTracker.DS_PREFIX)
             || persistenceUnit.getNonJtaDataSourceName() != null && persistenceUnit.getNonJtaDataSourceName().startsWith(DataSourceTracker.DS_PREFIX);
     }
+
+	@Override
+	public String getPersistenceProviderName() {
+		String name = persistenceUnit.getPersistenceProviderClassName();
+		return name == null ? provider.getClass().getName() : name;
+	}
+
+	@Override
+	public Bundle getPersistenceProviderBundle() {
+		return providerBundle;
+	}
 
 	@Override
 	public EntityManagerFactory createEntityManagerFactory(Map<String, Object> props) {

@@ -24,6 +24,8 @@ import org.apache.openjpa.enhance.PersistenceCapable;
 import org.junit.Test;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 public class JPAContainerOpenJPATest extends JPAContainerTest {
     
@@ -45,5 +47,15 @@ public class JPAContainerOpenJPATest extends JPAContainerTest {
         };
 
     }
+
+	@Override
+	protected String getProviderClassName() {
+		return "org.apache.openjpa.persistence.PersistenceProviderImpl";
+	}
+
+	@Override
+	protected Bundle getProviderBundle() {
+		return FrameworkUtil.getBundle(PersistenceCapable.class);
+	}
 
 }
