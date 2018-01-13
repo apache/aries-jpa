@@ -33,6 +33,7 @@ import org.apache.aries.jpa.container.itest.entities.Car;
 import org.apache.aries.jpa.container.itest.entities.CarService;
 import org.apache.aries.jpa.itest.AbstractCarJPAITest;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
@@ -123,6 +124,13 @@ public class BlueprintTest extends AbstractCarJPAITest {
             future.get();
         }
         assertNoCars(carService);
+    }
+
+    @Test
+    @Ignore
+    public void testCarWithRequiresNewAnnotation() throws Exception {
+        CarService cs = getCarService("rn");
+        cs.getCars();
     }
 
     private CarService getCarService(String type) {

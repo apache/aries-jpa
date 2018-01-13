@@ -108,6 +108,18 @@
         <tx:transaction method="*" value="Required" />
     </bean>
 
+    <service ref="carServiceRequiresNew"
+        interface="org.apache.aries.jpa.container.itest.entities.CarService">
+        <service-properties>
+            <entry key="type" value="rn" />
+        </service-properties>
+    </service>
+
+    <bean id="carServiceRequiresNew"
+        class="org.apache.aries.jpa.container.itest.bundle.blueprint.impl.CarServiceWithRequiresNew">
+        <property name="bundleContext" ref="blueprintBundleContext"/>
+    </bean>
+
     <bean id="carLifeCycle" class="org.apache.aries.jpa.container.itest.bundle.blueprint.impl.CarLifeCycle" >
         <property name="coordinator" ref="coordinator"/>
         <property name="carService" ref="carServiceEm"/>

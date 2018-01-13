@@ -40,6 +40,10 @@ Also testing declarative transactions</description>
             <artifactId>org.osgi.compendium</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.transaction</groupId>
             <artifactId>javax.transaction-api</artifactId>
             <version>1.2</version>
