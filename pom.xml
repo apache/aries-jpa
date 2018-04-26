@@ -37,9 +37,9 @@
     </properties>
     
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/aries/trunk/jpa</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/aries/trunk/jpa</developerConnection>
-        <url>http://svn.apache.org/viewvc/aries/trunk/jpa</url>
+        <connection>scm:git:http://git-wip-us.apache.org/repos/asf/aries-jpa.git</connection>
+        <developerConnection>scm:git:http://git-wip-us.apache.org/repos/asf/aries-jpa.git</developerConnection>
+        <tag>HEAD</tag>
     </scm>
 
     <modules>
