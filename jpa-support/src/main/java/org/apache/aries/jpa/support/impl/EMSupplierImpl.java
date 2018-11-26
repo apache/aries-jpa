@@ -29,8 +29,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 
 import org.apache.aries.jpa.supplier.EmSupplier;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.coordinator.Participant;
@@ -39,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Thread safe way to use an EntityManager.
- * 
+ *
  * Before the EMF is closed the close() method has to be called to make
  * sure all EMs are closed.
  */
@@ -88,9 +96,26 @@ public class EMSupplierImpl implements EmSupplier {
             setEm(coordination, em);
             coordination.addParticipant(new EmShutDownParticipant());
         }
+        else {
+            final Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+            if (bundle != null) {
+                final BundleContext bundleContext = bundle.getBundleContext();
+                ServiceReference<TransactionManager> tmRef = bundleContext.getServiceReference(TransactionManager.class);
+                TransactionManager tm = bundleContext.getService(tmRef);
+                try {
+                    final Transaction transaction = tm.getTransaction();
+                    if (transaction != null && transaction.getStatus() == Status.STATUS_ACTIVE) {
+                        em.joinTransaction();
+                    }
+                }
+                catch( SystemException se ) {
+                    throw new IllegalStateException("Unable to check transaction status and join the transaction", se);
+                }
+            }
+        }
         return em;
     }
-    
+
     Coordination getTopCoordination() {
         Coordination coordination = coordinator.peek();
         while (coordination != null && coordination.getEnclosingCoordination() != null) {
@@ -98,7 +123,7 @@ public class EMSupplierImpl implements EmSupplier {
         }
         return coordination;
     }
-    
+
     private void setEm(Coordination coordination, EntityManager em) {
         Map<Class<?>, Object> vars = coordination.getVariables();
         synchronized (vars) {
@@ -126,7 +151,7 @@ public class EMSupplierImpl implements EmSupplier {
         }
     }
 
-    
+
     @SuppressWarnings("unchecked")
     private Map<String, EntityManager> getEmMap(Coordination coordination) {
         Map<String, EntityManager> emMap = (Map<String, EntityManager>)coordination.getVariables().get(EntityManager.class);
@@ -167,7 +192,7 @@ public class EMSupplierImpl implements EmSupplier {
     }
 
     private synchronized boolean shutdownRemaining() {
-        boolean clean = emSet.isEmpty(); 
+        boolean clean = emSet.isEmpty();
         if  (!clean) {
             LOG.warn("{} EntityManagers still open after timeout. Shutting them down now", emSet.size());
         }
@@ -206,7 +231,7 @@ public class EMSupplierImpl implements EmSupplier {
             EntityManager em = removeEm(coordination);
             emSet.remove(em);
             em.close();
-            
+
             if (shutdown.get()) {
                 emsToShutDown.countDown();
             }

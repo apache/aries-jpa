@@ -17,6 +17,7 @@ package org.apache.aries.jpa.container.itest.bundle.blueprint.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
@@ -53,7 +54,9 @@ public class CarServiceWithRequiresNew extends AbstractCarServiceImpl {
             ref = getService();
             CarService carService = bundleContext.getService(ref);
             carService.addCar(c);
-            return Arrays.asList(this.getCar("TR123"));
+            final List<Car> returnVal = Arrays.asList(this.getCar("TR123"));
+            carService.deleteCar("TR123");
+            return returnVal;
         } finally {
             if (ref != null) {
                 bundleContext.ungetService(ref);
@@ -75,7 +78,9 @@ public class CarServiceWithRequiresNew extends AbstractCarServiceImpl {
     }
 
     @Override
+    @Transactional
     public void deleteCar(String id) {
+        em.remove(this.getCar(id));
     }
 
     public void setBundleContext(BundleContext bundleContext) {

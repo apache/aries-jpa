@@ -43,10 +43,10 @@ import org.osgi.service.coordinator.Coordinator;
 public class BlueprintTest extends AbstractCarJPAITest {
     @Inject
     Coordinator coordinator;
-    
+
     @Inject
     UserTransaction ut;
-    
+
     @Test
     public void testCoordination() {
         assertNoCoordination();
@@ -66,7 +66,7 @@ public class BlueprintTest extends AbstractCarJPAITest {
             Assert.assertEquals(0, carService.getCars().size());
         }
     }
-    
+
     @Test
     public void testInjectToMethod() throws Exception {
         carLifecycle(getCarService("method"));
@@ -86,7 +86,7 @@ public class BlueprintTest extends AbstractCarJPAITest {
     public void testEm() throws Exception {
         carLifecycle(getCarService("em"));
     }
-    
+
     @Test
     public void testEmJtaAnn() throws Exception {
         carLifecycle(getCarService("emJtaAnn"));
@@ -96,17 +96,17 @@ public class BlueprintTest extends AbstractCarJPAITest {
     public void testSupplier() throws Exception {
         carLifecycle(getCarService("supplier"));
     }
-    
+
     @Test
     public void testRealTransactional() throws Exception {
         carRealTransactionalLifecycle(getCarService("emJtaAnn"));
     }
-    
+
     @Test
     public void testInlined() throws Exception {
         carRealTransactionalLifecycle(getCarService("emJtaAnnInlined"));
     }
-    
+
     @Test
     public void testCoordinationLifecycle() throws InterruptedException, ExecutionException {
         CarService carService = getCarService("em");
@@ -127,7 +127,6 @@ public class BlueprintTest extends AbstractCarJPAITest {
     }
 
     @Test
-    @Ignore
     public void testCarWithRequiresNewAnnotation() throws Exception {
         CarService cs = getCarService("rn");
         cs.getCars();
@@ -146,7 +145,7 @@ public class BlueprintTest extends AbstractCarJPAITest {
         assertBlueCar(carService.getCar(BLUE_PLATE));
         carService.deleteCar(BLUE_PLATE);
     }
-    
+
     private void carRealTransactionalLifecycle(CarService carService) throws IllegalStateException, SystemException, NotSupportedException {
         assertNoCoordination();
         if (carService.getCar(BLACK_CAR_PLATE) != null) {
@@ -162,7 +161,7 @@ public class BlueprintTest extends AbstractCarJPAITest {
         Coordination coord = coordinator.peek();
         Assert.assertNull("There should not be a coordination on this thread", coord);
     }
-    
+
     private void assertNoCars(CarService carService) {
         Assert.assertEquals("Invalid number of cars", 0, carService.getCars().size());
     }
