@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.aries.jpa.example.tasklist.model.Task;
 import org.apache.aries.jpa.example.tasklist.model.TaskService;
-import org.osgi.service.component.annotations.Reference;
 
 public class TasklistServlet extends HttpServlet {
     private transient TaskService taskService; // NOSONAR
@@ -82,7 +81,6 @@ public class TasklistServlet extends HttpServlet {
 
     }
 
-    @Reference
     public void setTaskService(TaskService taskService) {
         this.taskService = taskService;
     }
