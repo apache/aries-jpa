@@ -39,7 +39,6 @@
     <scm>
         <connection>scm:git:git@github.com:apache/aries-jpa.git</connection>
         <developerConnection>scm:git:git@github.com:apache/aries-jpa.git</developerConnection>
-        <tag>aries-jpa-2.7.1</tag>
     </scm>
 
     <modules>
