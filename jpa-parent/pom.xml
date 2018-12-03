@@ -28,7 +28,7 @@
 
     <groupId>org.apache.aries.jpa</groupId>
     <artifactId>org.apache.aries.jpa.parent</artifactId>
-    <version>2.7.1-SNAPSHOT</version>
+    <version>2.7.1</version>
 
     <name>Apache Aries JPA parent</name>
     <packaging>pom</packaging>
@@ -282,4 +282,8 @@
             </build>
         </profile>
     </profiles>
+
+  <scm>
+    <tag>aries-jpa-2.7.1</tag>
+  </scm>
 </project>
