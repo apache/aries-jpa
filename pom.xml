@@ -35,10 +35,10 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
     <scm>
-        <connection>scm:git:http://git-wip-us.apache.org/repos/asf/aries-jpa.git</connection>
-        <developerConnection>scm:git:http://git-wip-us.apache.org/repos/asf/aries-jpa.git</developerConnection>
+        <connection>scm:git:git@github.com:apache/aries-jpa.git</connection>
+        <developerConnection>scm:git:git@github.com:apache/aries-jpa.git</developerConnection>
         <tag>aries-jpa-2.7.1</tag>
     </scm>
 
@@ -58,4 +58,3 @@
     </modules>
 
 </project>
-
