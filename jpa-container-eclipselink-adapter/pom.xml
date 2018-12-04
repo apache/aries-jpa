@@ -47,7 +47,7 @@
         <dependency>
             <groupId>org.apache.aries.jpa.javax.persistence</groupId>
             <artifactId>javax.persistence_2.1</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
