@@ -58,7 +58,7 @@ Also testing declarative transactions</description>
         <dependency>
             <groupId>org.apache.aries.jpa.javax.persistence</groupId>
             <artifactId>javax.persistence_2.0</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
