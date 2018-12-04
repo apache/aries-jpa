@@ -1,5 +1,7 @@
 # Aries JPA
 
+[![Build Status](https://builds.apache.org/buildStatus/icon?job=Aries-JPA-Trunk-JDK8-Deploy)](https://builds.apache.org/job/Aries-JPA-Trunk-JDK8-Deploy/)
+
 Implements the OSGi JPA Service Specification from the enterprise spec. Additionally some convenience
 services are provided to make it easier to use JPA in blueprint and DS.
 
