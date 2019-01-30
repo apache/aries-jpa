@@ -81,7 +81,9 @@ public class JpaInterceptor implements Interceptor {
     public void postCallWithException(ComponentMetadata cm, Method m, Throwable ex, Object preCallToken) {
         LOG.debug("PostCallWithException for bean {}, method {}", cm.getId(), m.getName(), ex);
         if (preCallToken != null) {
-            ((Coordination)preCallToken).fail(ex);
+            Coordination coordination = (Coordination)preCallToken;
+            coordination.fail(ex);
+            safeEndCoordination(coordination);
         }
     }
 
@@ -90,7 +92,7 @@ public class JpaInterceptor implements Interceptor {
         throws Exception {
         LOG.debug("PostCallWithReturn for bean {}, method {}", cm.getId(), m.getName());
         if (preCallToken != null) {
-            ((Coordination)preCallToken).end();
+            safeEndCoordination((Coordination)preCallToken);
         }
     }
 
@@ -109,5 +111,15 @@ public class JpaInterceptor implements Interceptor {
         PersistenceUnitTransactionType transactionType = (PersistenceUnitTransactionType)em.getProperties()
             .get(PersistenceUnitTransactionType.class.getName());
         return transactionType == PersistenceUnitTransactionType.RESOURCE_LOCAL;
+    }
+    
+    private void safeEndCoordination(final Coordination coordination) {
+        try {
+            if (coordination != null) {
+                coordination.end();
+            }
+        } catch (Exception e){
+            LOG.debug(e.getMessage(), e);
+        }
     }
 }
