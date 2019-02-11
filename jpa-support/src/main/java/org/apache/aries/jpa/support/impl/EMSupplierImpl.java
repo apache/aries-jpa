@@ -38,10 +38,10 @@ import org.apache.aries.jpa.supplier.EmSupplier;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.coordinator.Coordination;
 import org.osgi.service.coordinator.Coordinator;
 import org.osgi.service.coordinator.Participant;
+import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +63,7 @@ public class EMSupplierImpl implements EmSupplier {
     private CountDownLatch emsToShutDown;
     private Coordinator coordinator;
     private String unitName;
+    private ServiceTracker<TransactionManager, TransactionManager> tmTracker;
 
     public EMSupplierImpl(String unitName, final EntityManagerFactory emf, Coordinator coordinator) {
         this.unitName = unitName;
@@ -70,6 +71,17 @@ public class EMSupplierImpl implements EmSupplier {
         this.coordinator = coordinator;
         this.shutdown = new AtomicBoolean(false);
         this.emSet = Collections.newSetFromMap(new ConcurrentHashMap<EntityManager, Boolean>());
+
+        final Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+        if (bundle != null) {
+            final BundleContext bundleContext = bundle.getBundleContext();
+            this.tmTracker = new ServiceTracker<TransactionManager, TransactionManager>(bundleContext,
+                    TransactionManager.class, null);
+            tmTracker.open();
+        }
+        else {
+            LOG.warn("Transaction manager will be not available.");
+        }
     }
 
     private EntityManager createEm(EntityManagerFactory emf) {
@@ -97,20 +109,22 @@ public class EMSupplierImpl implements EmSupplier {
             coordination.addParticipant(new EmShutDownParticipant());
         }
         else {
-            final Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-            if (bundle != null) {
-                final BundleContext bundleContext = bundle.getBundleContext();
-                ServiceReference<TransactionManager> tmRef = bundleContext.getServiceReference(TransactionManager.class);
-                TransactionManager tm = bundleContext.getService(tmRef);
-                try {
-                    final Transaction transaction = tm.getTransaction();
-                    if (transaction != null && transaction.getStatus() == Status.STATUS_ACTIVE) {
-                        em.joinTransaction();
-                    }
+            if (tmTracker == null) {
+                return em;
+            }
+            TransactionManager tm = tmTracker.getService();
+            if (tm == null) {
+                LOG.warn("Transaction manager is not available.");
+                return em;
+            }
+            try {
+                final Transaction transaction = tm.getTransaction();
+                if (transaction != null && transaction.getStatus() == Status.STATUS_ACTIVE) {
+                    em.joinTransaction();
                 }
-                catch( SystemException se ) {
-                    throw new IllegalStateException("Unable to check transaction status and join the transaction", se);
-                }
+            }
+            catch( SystemException se ) {
+                throw new IllegalStateException("Unable to check transaction status and join the transaction", se);
             }
         }
         return em;
@@ -179,6 +193,9 @@ public class EMSupplierImpl implements EmSupplier {
      * @return true if clean close, false if timeout occured
      */
     public boolean close() {
+        if (tmTracker != null) {
+            tmTracker.close();
+        }
         synchronized (this) {
             shutdown.set(true);
             emsToShutDown = new CountDownLatch(emSet.size());
