@@ -28,3 +28,4 @@ Run the tck tests to make sure we are still conforming to the spec.
     mvn release:perform
 
 After the release make sure to adapt the versions in the tck test modules.
+ 
