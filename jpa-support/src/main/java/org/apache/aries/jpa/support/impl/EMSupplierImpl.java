@@ -108,10 +108,7 @@ public class EMSupplierImpl implements EmSupplier {
             setEm(coordination, em);
             coordination.addParticipant(new EmShutDownParticipant());
         }
-        else {
-            if (tmTracker == null) {
-                return em;
-            }
+        else if (tmTracker != null) {
             TransactionManager tm = tmTracker.getService();
             if (tm == null) {
                 LOG.warn("Transaction manager is not available.");
