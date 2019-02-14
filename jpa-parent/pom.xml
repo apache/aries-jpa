@@ -32,7 +32,7 @@
 
     <name>Apache Aries JPA parent</name>
     <packaging>pom</packaging>
-    
+
     <properties>
         <baseline>2.6.0</baseline>
         <baseline.skip>false</baseline.skip>
@@ -79,7 +79,7 @@
                 <artifactId>org.osgi.service.jpa</artifactId>
                 <version>1.1.0</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-jta_1.1_spec</artifactId>
@@ -246,6 +246,7 @@
                             <reportFile>${project.build.directory}/${project.build.finalName}.rat</reportFile>
                             <excludeSubProjects>true</excludeSubProjects>
                             <excludes>
+                                <exclude>**/.git/**/*</exclude>
                                 <exclude>**/target/**/*</exclude>
                                 <exclude>**/appended-resources/**/*</exclude>
                                 <exclude>**/dependency-reduced-pom.xml</exclude>
@@ -272,9 +273,11 @@
                                 <exclude>.gitignore</exclude>
                                 <exclude>osgi.bnd</exclude>
                                 <exclude>README.md</exclude>
+                                <exclude>Readme.md</exclude>
                                 <exclude>*.cfg</exclude>
                                 <exclude>derby.log</exclude>
                                 <exclude>**/*.sql</exclude>
+                                <exclude>.travis.yml</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
