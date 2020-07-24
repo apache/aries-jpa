@@ -83,6 +83,7 @@ public class AriesEntityManagerFactoryBuilder implements EntityManagerFactoryBui
 
 	private boolean complete;
 
+	private Map<String, Object> overrides;
 
 
 	public AriesEntityManagerFactoryBuilder(BundleContext containerContext, PersistenceProvider provider, Bundle providerBundle, PersistenceUnit persistenceUnit) {
@@ -210,7 +211,11 @@ public class AriesEntityManagerFactoryBuilder implements EntityManagerFactoryBui
 		for(String key : punitProps.stringPropertyNames()) {
 			processed.put(key, punitProps.get(key));
 		}
-		
+		synchronized (this) {
+			if (overrides != null) {
+				processed.putAll(overrides);
+			}
+		}
 		if(props != null) {
 			processed.putAll(props);
 		}
@@ -536,5 +541,9 @@ public class AriesEntityManagerFactoryBuilder implements EntityManagerFactoryBui
 			props.put(JAVAX_PERSISTENCE_NON_JTA_DATASOURCE, ds);
 		}
 		createEntityManagerFactory(props);
+	}
+
+	public synchronized void setOverrides(Map<String, Object> overrides) {
+		this.overrides = overrides;
 	}
 }
