@@ -34,7 +34,7 @@
     
     <properties>
         <baseline.skip>true</baseline.skip>
-        <karaf.version>4.0.8</karaf.version>
+        <karaf.version>4.2.11</karaf.version>
     </properties>
 
     <dependencies>

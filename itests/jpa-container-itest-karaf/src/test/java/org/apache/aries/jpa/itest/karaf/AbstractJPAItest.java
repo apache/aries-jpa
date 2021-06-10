@@ -122,24 +122,25 @@ public abstract class AbstractJPAItest {
         if (localRepo == null) {
             localRepo = System.getProperty("org.ops4j.pax.url.mvn.localRepository");
         }
-        MavenArtifactUrlReference karafUrl = maven().groupId("org.apache.karaf").artifactId("apache-karaf").version("4.0.8").type("tar.gz");
+        MavenArtifactUrlReference karafUrl = maven().groupId("org.apache.karaf").artifactId("apache-karaf").version("4.2.11").type("tar.gz");
         UrlReference enterpriseFeatureUrl = maven().groupId("org.apache.karaf.features").artifactId("enterprise").versionAsInProject().type("xml").classifier("features");
         UrlReference jpaFeatureUrl = maven().groupId("org.apache.aries.jpa").artifactId("jpa-features").versionAsInProject().type("xml").classifier("features");
-        UrlReference paxJdbcFeatureUrl = maven().groupId("org.ops4j.pax.jdbc").artifactId("pax-jdbc-features").version("0.7.0").type("xml").classifier("features");
+        UrlReference paxJdbcFeatureUrl = maven().groupId("org.ops4j.pax.jdbc").artifactId("pax-jdbc-features").version("1.5.1").type("xml").classifier("features");
         return CoreOptions.composite(
             //KarafDistributionOption.debugConfiguration("8000", true),
             karafDistributionConfiguration().frameworkUrl(karafUrl).name("Apache Karaf").unpackDirectory(new File("target/exam")).useDeployFolder(false),
             configureSecurity().disableKarafMBeanServerBuilder(),
             systemProperty("pax.exam.osgi.unresolved.fail").value("true"),
+            systemProperty("karaf.log").value(new File("target").getAbsolutePath()),
             keepRuntimeFolder(),
-            logLevel(LogLevel.INFO),
+            logLevel(LogLevel.DEBUG),
             when(localRepo != null).useOptions(vmOption("-Dorg.ops4j.pax.url.mvn.localRepository=" + localRepo)),
             features(paxJdbcFeatureUrl, "pax-jdbc-config", "pax-jdbc-h2", "pax-jdbc-pool-dbcp2"),
-            features(enterpriseFeatureUrl, "transaction", "http-whiteboard", "hibernate/4.3.6.Final", "scr"),
+            features(enterpriseFeatureUrl, "transaction", "http-whiteboard", "hibernate/5.4.29.Final", "scr"),
             features(jpaFeatureUrl, "jpa"),
             mavenBundle("org.apache.aries.jpa.example", "org.apache.aries.jpa.example.tasklist.model").versionAsInProject(),
-            editConfigurationFilePut(DS_CONFIG, DataSourceFactory.OSGI_JDBC_DRIVER_NAME, "H2-pool-xa"),
-            editConfigurationFilePut(DS_CONFIG, DataSourceFactory.JDBC_DATABASE_NAME, "tasklist;create=true"),
+            editConfigurationFilePut(DS_CONFIG, DataSourceFactory.OSGI_JDBC_DRIVER_NAME, "H2 JDBC Driver"),
+            editConfigurationFilePut(DS_CONFIG, DataSourceFactory.JDBC_URL, "jdbc:h2:mem:tasklist;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=TRUE;TRACE_LEVEL_FILE=4"),
             editConfigurationFilePut(DS_CONFIG, DataSourceFactory.JDBC_DATASOURCE_NAME, "tasklist"),
             replaceConfigurationFile("etc/org.ops4j.pax.logging.cfg", new File("src/test/resources/org.ops4j.pax.logging.cfg"))
 //            replaceConfigurationFile("etc/org.ops4j.pax.logging.cfg", getConfigFile("/etc/org.ops4j.pax.logging.cfg")),

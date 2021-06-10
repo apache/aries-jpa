@@ -16,8 +16,10 @@
 package org.apache.aries.jpa.itest.karaf;
 
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.debugConfiguration;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.inject.Inject;
 
@@ -25,7 +27,6 @@ import org.apache.aries.jpa.example.tasklist.model.Task;
 import org.apache.aries.jpa.example.tasklist.model.TaskService;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -47,23 +48,24 @@ public class DSTest extends AbstractJPAItest {
         taskService = getService(TaskService.class, null);
     }
     
-    /**
-     * Test currently does not work as data source config is not deployed for unknown reason
-     */
-    @Ignore
     @Test
     public void test() throws BundleException {
         resolveBundles();
-        Assert.assertEquals(0, taskService.getTasks().size());
+        Collection<Task> tasks1 = taskService.getTasks();
+        Assert.assertEquals(1, tasks1.size());
         Task task = new Task();
-        task.setId(1);
-        task.setDescription("My task");
+        task.setId(2);
+        task.setDescription("My task 2");
         taskService.addTask(task);
         Collection<Task> tasks = taskService.getTasks();
-        Assert.assertEquals(1, tasks.size());
-        Task task1  = tasks.iterator().next();
+        Assert.assertEquals(2, tasks.size());
+        Iterator<Task> iterator = tasks.iterator();
+        Task task2  = iterator.next();
+        Assert.assertEquals(2, task2.getId().intValue());
+        Assert.assertEquals("My task 2", task2.getDescription());
+        Task task1  = iterator.next();
         Assert.assertEquals(1, task1.getId().intValue());
-        Assert.assertEquals("My task", task1.getDescription());
+        Assert.assertEquals("Task1", task1.getTitle());
     }
 
     @Configuration

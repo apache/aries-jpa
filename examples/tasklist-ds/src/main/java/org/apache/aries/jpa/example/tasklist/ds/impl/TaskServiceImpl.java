@@ -62,7 +62,7 @@ public class TaskServiceImpl implements TaskService {
         return jpa.txExpr(new EmFunction<Collection<Task>>() {
             @Override
             public Collection<Task> apply(EntityManager em) {
-                return em.createQuery("select t from Task t", Task.class).getResultList();
+                return em.createQuery("select t from Task t order by t.id desc", Task.class).getResultList();
             }
         });
     }
