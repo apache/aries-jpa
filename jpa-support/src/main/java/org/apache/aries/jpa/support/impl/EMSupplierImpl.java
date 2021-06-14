@@ -128,9 +128,19 @@ public class EMSupplierImpl implements EmSupplier {
     }
 
     Coordination getTopCoordination() {
+        // In normal situation, There should be TxInterceptor and JpaInterceptor
         Coordination coordination = coordinator.peek();
         while (coordination != null && coordination.getEnclosingCoordination() != null) {
             coordination = coordination.getEnclosingCoordination();
+            if (coordination != null) {
+                String transaction = (String) coordination.getVariables().get(Transaction.class);
+                if (transaction != null) {
+                    // ARIES-2050: transaction-blueprint doesn't always create new coordination (for example
+                    // when calling REQUIRED -> REQUIRED annotated methods. And we can assume the "new" behavior
+                    // when the Transaction.class attribute is not null (it matches one of the 6 TX behaviors)
+                    return coordination;
+                }
+            }
         }
         return coordination;
     }

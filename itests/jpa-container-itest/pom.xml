@@ -283,6 +283,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.aries.jpa.itest</groupId>
+            <artifactId>org.apache.aries.jpa.container.itest.bundle.blueprint.dao</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.aries.jpa</groupId>
             <artifactId>org.apache.aries.jpa.container.itest.bundle.eclipselink</artifactId>
             <version>${project.version}</version>
