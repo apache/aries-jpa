@@ -41,7 +41,7 @@ public class BlueprintDaoTest extends AbstractJPAItest {
                 derbyDSF(), //
                 testBundle(), //
                 testBundleBlueprintDao(),
-                mavenBundle("org.apache.aries.transaction", "org.apache.aries.transaction.blueprint", "2.3.0-SNAPSHOT"),
+                mavenBundle("org.apache.aries.transaction", "org.apache.aries.transaction.blueprint", "2.3.0"),
 //                 debug()
         };
     }
