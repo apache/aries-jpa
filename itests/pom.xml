@@ -50,6 +50,7 @@
 
     <modules>
         <module>jpa-container-blueprint-testbundle</module>
+        <module>jpa-container-blueprint-testbundle-dao</module>
         <module>jpa-container-itest</module>
         <module>jpa-container-itest-karaf</module>
         <module>jpa-container-testbundle</module>
