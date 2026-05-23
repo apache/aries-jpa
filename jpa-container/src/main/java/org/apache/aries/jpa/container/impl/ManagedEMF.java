@@ -71,7 +71,7 @@ public class ManagedEMF implements ManagedService {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Using properties override {}", overrides);
 		}
-		
+		builder.setOverrides(overrides);
 		builder.createEntityManagerFactory(overrides);
 		configured.set(true);
 	}
