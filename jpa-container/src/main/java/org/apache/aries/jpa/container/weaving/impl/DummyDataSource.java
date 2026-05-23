@@ -67,6 +67,9 @@ public final class DummyDataSource implements DataSource {
             if (type == Statement.class) {
                 return createProxy(classLoader, PreparedStatement.class);
             }
+            if (type == Connection.class) {
+                return createProxy(classLoader, Connection.class);
+            }
             return null;
         }
 
